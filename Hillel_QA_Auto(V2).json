@@ -1,0 +1,454 @@
+{
+	"info": {
+		"_postman_id": "39fd3f0e-2fd9-4177-92a2-eceacea91e19",
+		"name": "Hillel QA Auto",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "36402115"
+	},
+	"item": [
+		{
+			"name": "Users Requests",
+			"item": [
+				{
+					"name": "Reg User(valid,unique user)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", function(){\r",
+									"    pm.response.to.have.status(201);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"To be JSON\", function(){\r",
+									"    pm.response.to.be.json\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Schema valid\", function(){\r",
+									"    const schema = {\r",
+									"        \"status\": {\"type\": \"string\"},\r",
+									"        \"data\": {\"type\": \r",
+									"            \"object\",\"properties\": {\r",
+									"                \"userId\": {\"type\": \"number\"},\r",
+									"                \"photoFilename\": {\"type\": \"string\"},\r",
+									"                \"distanceUnits\": {\"type\": \"string\"},\r",
+									"                \"currency\": {\"type\": \"string\"}\r",
+									"            }\r",
+									"        }\r",
+									"    }\r",
+									"\r",
+									"    pm.response.to.have.jsonSchema(schema);\r",
+									"})\r",
+									"\r",
+									"\r",
+									"pm.test(\"Save user Id\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    pm.environment.set(\"userId\", jsonData.data.userId);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"var uniqueName = pm.variables.replaceIn('{{$randomFirstName}}')\r",
+									"var uniqueLastName = pm.variables.replaceIn('{{$randomLastName}}')\r",
+									"var uniqueEmail = pm.variables.replaceIn('{{$randomEmail}}')\r",
+									"var uniquePassword = pm.variables.replaceIn('{{$randomPassword}}')\r",
+									"\r",
+									"pm.environment.set(\"uniqueName\", uniqueName);\r",
+									"pm.environment.set(\"uniqueLastName\", uniqueLastName);\r",
+									"pm.environment.set(\"uniqueEmail\", uniqueEmail);\r",
+									"pm.environment.set(\"uniquePassword\", uniquePassword);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{uniqueName}}\",\r\n    \"lastName\": \"{{uniqueLastName}}\",\r\n    \"email\": \"{{uniqueEmail}}\",\r\n    \"password\": \"{{uniquePassword}}\",\r\n    \"repeatPassword\": \"{{uniquePassword}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{URL}}/api/auth/signup"
+					},
+					"response": []
+				},
+				{
+					"name": "Edits profile",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"var uniqueName = pm.variables.replaceIn('{{$randomFirstName}}');\r",
+									"var uniqueLastName = pm.variables.replaceIn('{{$randomLastName}}');\r",
+									"var uniquePhoto = pm.variables.replaceIn('{{$randomAvatarImage}}');\r",
+									"var uniqueDateBirth = new Date(pm.variables.replaceIn('{{$randomDatePast}}')).toISOString();\r",
+									"var uniqueCountry = pm.variables.replaceIn('{{$randomCountry}}');\r",
+									"\r",
+									"pm.environment.set(\"uniqueName\", uniqueName);\r",
+									"pm.environment.set(\"uniqueLastName\", uniqueLastName);\r",
+									"pm.environment.set(\"uniquePhoto\", uniquePhoto);\r",
+									"pm.environment.set(\"uniqueDateBirth\", uniqueDateBirth);\r",
+									"pm.environment.set(\"uniqueCountry\", uniqueCountry);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Valid JSON\", function () {\r",
+									"    pm.response.to.be.json;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Updated values\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"\r",
+									"    pm.expect(jsonData.status).to.eql(\"ok\");\r",
+									"    pm.expect(jsonData.data.name).to.eql(pm.environment.get(\"uniqueName\"));\r",
+									"    pm.expect(jsonData.data.lastName).to.eql(pm.environment.get(\"uniqueLastName\"));\r",
+									"    pm.expect(jsonData.data.dateBirth).to.eql(pm.environment.get(\"uniqueDateBirth\"));\r",
+									"    pm.expect(jsonData.data.country).to.eql(pm.environment.get(\"uniqueCountry\"));\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Date of Birth\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    const dateBirth = jsonData.data.dateBirth;\r",
+									"    pm.expect(dateBirth).to.eql(pm.environment.get(\"uniqueDateBirth\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"photo\": \"{{uniquePhoto}}\",\r\n    \"name\": \"{{uniqueName}}\",\r\n    \"lastName\": \"{{uniqueLastName}}\",\r\n    \"dateBirth\": \"{{uniqueDateBirth}}\",\r\n    \"country\": \"{{uniqueCountry}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{URL}}/api/users/profile"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Valid JSON\", function () {\r",
+									"    pm.response.to.be.json;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Successful login\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.status).to.eql(\"ok\");\r",
+									"    pm.expect(jsonData.data.userId).to.eql(pm.environment.get(\"userId\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"{{uniqueEmail}}\",\r\n  \"password\": \"{{uniquePassword}}\",\r\n  \"remember\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{URL}}/api/auth/signin"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Response should be valid JSON\", function () {\r",
+									"    pm.response.to.be.json;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Password change should be successful\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.status).to.eql(\"ok\");\r",
+									"    pm.expect(jsonData.data.userId).to.eql(pm.environment.get(\"userId\"));\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"oldPassword\": \"{{uniquePassword}}\",\r\n    \"password\": \"FooBar12345\",\r\n    \"repeatPassword\": \"FooBar12345\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{URL}}/api/users/password"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Garage",
+			"item": [
+				{
+					"name": "Garage(Brands)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": "{{URL}}/api/cars/brands"
+					},
+					"response": []
+				},
+				{
+					"name": "Garage(models)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": "{{URL}}/api/cars/models"
+					},
+					"response": []
+				},
+				{
+					"name": "Creates car",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status 200\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Create car data\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData).to.have.property(\"status\", \"ok\");\r",
+									"    pm.expect(jsonData.data).to.have.property(\"id\");\r",
+									"    pm.expect(jsonData.data).to.have.property(\"carBrandId\");\r",
+									"    pm.expect(jsonData.data).to.have.property(\"carModelId\");\r",
+									"    pm.expect(jsonData.data).to.have.property(\"mileage\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"carBrandId\": 1,\r\n  \"carModelId\": 1,\r\n  \"mileage\": 200\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{URL}}/api/cars"
+					},
+					"response": []
+				},
+				{
+					"name": "Add existing",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"carBrandId\": 1,\r\n  \"carModelId\": 1,\r\n  \"mileage\": 500\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{URL}}/api/cars/176288"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Logout/Delete",
+			"item": [
+				{
+					"name": "Logout",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{URL}}/api/auth/logout"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "inherit",
+		"inherit": {}
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "uniqueName",
+			"value": ""
+		},
+		{
+			"key": "uniqueLastName",
+			"value": ""
+		},
+		{
+			"key": "uniquePhoto",
+			"value": ""
+		},
+		{
+			"key": "uniqueDateBirth",
+			"value": ""
+		},
+		{
+			"key": "uniqueCountry",
+			"value": ""
+		},
+		{
+			"key": "URL",
+			"value": "https://qauto2.forstudy.space/api",
+			"type": "string"
+		}
+	]
+}
